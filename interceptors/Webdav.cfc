@@ -55,7 +55,7 @@ component {
         ** WebDAV by it's nature is very "chatty", so optimising performance is a priority.
         */
 
-        if (!request.security.sIsUserLoggedIn()) {
+        if (!authenticator.isUserAuthenticated()) {
           authenticator.authenticate(username, password);
         }
       } else {
@@ -63,7 +63,7 @@ component {
         ** No Authorization header exists, so if you want your app secured, you have to prompt
         ** for authorization.
         */
-        if (!request.security.sIsUserLoggedIn()) {
+        if (!authenticator.isUserAuthenticated()) {
           event.setHTTPHeader(name = "WWW-Authenticate", value = "basic realm=""webdav""");
           event.renderData(data = "", statusCode = "401", statusText = "Unauthorized").noExecution();
         }
