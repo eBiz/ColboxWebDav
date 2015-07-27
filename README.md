@@ -12,7 +12,7 @@ file system and MySQL.
 
 LGPL v2.1
 
-
+ 
 ## Getting started
 
 To get started, there is a sample tempDirectoryProvider which provides WebDAV access to the lucee temp directory. This is for demo purposes only(!),
