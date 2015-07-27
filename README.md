@@ -6,37 +6,37 @@ This is a coldbox module to enable WebDAV access to your coldbox application.
 
 To use, simply drop the module into your application. By default, it has annoymous access and uses the lucee temp directory as
 a base for file operations, however, in production we are using it with basic auth over SSL and are using it with a virtual
-file system and a MySQL.
+file system and MySQL.
 
 Currently it supports the following WebDAV protocols:
 
-### GET
+##### GET
 Downloads a file.
 
-### PUT
+##### PUT
 Uses the body of the request to update an existing document, or, when the body is empty, creates a new document.
 
-### LIST
+##### LIST
 Lists the contents of a directory
 
-### MKCOL
+##### MKCOL
 Creates a new directory
 
-### DELETE
+##### DELETE
 Deletes a file or directory
 
-### PROPFIND
+##### PROPFIND
 Get properties for a file or directory
 
-### COPY
+##### COPY
 Copies a file or directory
 
-### MOVE
+##### MOVE
 Moves or renames a file or directory
 
-### LOCK
+##### LOCK
 Locks a file for editing
 
-### UNLOCK
+##### UNLOCK
 Unlocks a file once editing is complete
 
