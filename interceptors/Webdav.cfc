@@ -31,47 +31,41 @@ component {
     var rc = event.getCollection();
     if (ListFirst(event.getCurrentEvent(),":") == "webdav") {
 
+      // fix trailing slashes
+      rc.webDavPath = reReplace(urlDecode(event.getCurrentRoutedURL()), "/$","","all" );
       /*
-      ** Our app enforces access to Windows only, so we do a rather hackish lookup here to check they're using the windows WebDAV client. You can
-      ** remove this condition entirely if you want to open the WebDAV module up to other clients. However, we haven't tested on other WebDAV clients,
-      ** so that's entirely on you.
+      ** WebDAV using basic auth sends a Authorization header with every request if one exists.
+      ** If you want non-anonymous access to WebDAV you have to keep this section enabled.
+      ** We are using basic authentication here as, which means usernames/passwords are sent in pretty much
+      ** plain text. If using Windows, you MUST use SSL on your site and connect using https; firstly it's best
+      ** practice, and also because Windows will not let you connect (you get stuck in an endless spiral of authentication.
+      ** At least this is true in Windows 7/8. I'm not sure about XP because we haven't tested it.
       */
-      if (findNoCase("WebDAV", cgi.http_user_agent)) {
-        rc.webDavPath = reReplace(urlDecode(event.getCurrentRoutedURL()), "/$","","all" );
+      if (event.getHTTPHeader("Authorization", "") != "") {
+        var authHeader = event.getHTTPHeader("Authorization", "");
+        encodedCredentials = ListLast(event.getHTTPHeader("Authorization", ""), " ");
+        credentials = ToString(ToBinary(encodedCredentials));
+        var username = ListFirst(credentials, ":");
+        var password = ListLast(credentials, ":");
         /*
-        ** WebDAV using basic auth sends a Authorization header with every request if one exists.
-        ** If you want non-anonymous access to WebDAV you have to keep this section enabled.
-        ** We are using basic authentication here as, which means usernames/passwords are sent in pretty much
-        ** plain text. If using Windows, you MUST use SSL on your site and connect using https; firstly it's best
-        ** practice, and also because Windows will not let you connect (you get stuck in an endless spiral of authentication.
-        ** At least this is true in Windows 7/8. I'm not sure about XP because we haven't tested it.
+        ** do your own security validation here. Windows WebDAV client actually stores cookies,
+        ** so we can check for a cookie/login session and only have to do the login procedure once.
+        ** If the user isn't using a windows WebDAV client, unfortunately you have to do this every time if
+        ** you want to secure your app. Therefore, you need to make this part speedy (ideally leverage heavy caching).
+        ** WebDAV by it's nature is very "chatty", so optimising performance is a priority.
         */
-        if (event.getHTTPHeader("Authorization", "") != "") {
-          var authHeader = event.getHTTPHeader("Authorization", "");
-          encodedCredentials = ListLast(event.getHTTPHeader("Authorization", ""), " ");
-          credentials = ToString(ToBinary(encodedCredentials));
-          var username = ListFirst(credentials, ":");
-          var password = ListLast(credentials, ":");
-          /*
-          ** do your own security validation here. Windows WebDAV client actually stores cookies,
-          ** so we can check for a cookie/login session and only have to do the login procedure once.
-          ** If the user isn't using a windows WebDAV client, unfortunately you have to do this every time if
-          ** you want to secure your app. Therefore, you need to make this part speedy (ideally leverage heavy caching).
-          ** WebDAV by it's nature is very "chatty", so optimising performance is a priority.
-          */
 
-          if (!request.security.sIsUserLoggedIn()) {
-            authenticator.authenticate(username, password);
-          }
-        } else {
-          /*
-          ** No Authorization header exists, so if you want your app secured, you have to prompt
-          ** for authorization.
-          */
-          if (!request.security.sIsUserLoggedIn()) {
-            event.setHTTPHeader(name = "WWW-Authenticate", value = "basic realm=""webdav""");
-            event.renderData(data = "", statusCode = "401", statusText = "Unauthorized").noExecution();
-          }
+        if (!request.security.sIsUserLoggedIn()) {
+          authenticator.authenticate(username, password);
+        }
+      } else {
+        /*
+        ** No Authorization header exists, so if you want your app secured, you have to prompt
+        ** for authorization.
+        */
+        if (!request.security.sIsUserLoggedIn()) {
+          event.setHTTPHeader(name = "WWW-Authenticate", value = "basic realm=""webdav""");
+          event.renderData(data = "", statusCode = "401", statusText = "Unauthorized").noExecution();
         }
       }
     }
