@@ -8,6 +8,11 @@ To use, simply drop the module into your application. By default, it has annoymo
 a base for file operations, however, in production we are using it with basic auth over SSL and are using it with a virtual
 file system and MySQL.
 
+##License
+
+LGPL v2.1
+
+
 ## Getting started
 
 To get started, there is a sample tempDirectoryProvider which provides WebDAV access to the lucee temp directory. This is for demo purposes only(!),
